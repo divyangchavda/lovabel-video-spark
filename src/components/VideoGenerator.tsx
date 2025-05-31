@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +8,7 @@ import { Download, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 const GEMINI_API_KEY = "AIzaSyAUdn59Qd4GnJccsumyEB_uSOGhbSo7MTU";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1206:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 export const VideoGenerator = () => {
   const [prompt, setPrompt] = useState('');
@@ -64,10 +63,10 @@ export const VideoGenerator = () => {
       const data = await response.json();
       console.log("API Response data:", data);
       
-      // Note: Gemini Veo 2 API might return video data differently
+      // Note: Gemini 2.0 Flash API might return video data differently
       // This is a placeholder implementation - you may need to adjust based on actual API response
       if (data.candidates && data.candidates[0]) {
-        // For now, using a demo video as Gemini Veo 2 API structure might be different
+        // For now, using a demo video as Gemini API structure might be different
         const demoVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
         setGeneratedVideo(demoVideoUrl);
         
@@ -123,7 +122,7 @@ export const VideoGenerator = () => {
                 Create Your AI Video
               </h2>
               <p className="text-gray-300 text-lg">
-                Describe your vision and watch it come to life with Gemini Veo 2
+                Describe your vision and watch it come to life with Gemini 2.0 Flash
               </p>
             </div>
 
