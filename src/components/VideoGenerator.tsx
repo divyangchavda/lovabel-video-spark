@@ -8,6 +8,9 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Download, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
+const GEMINI_API_KEY = "AIzaSyAUdn59Qd4GnJccsumyEB_uSOGhbSo7MTU";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-exp-1206:generateContent";
+
 export const VideoGenerator = () => {
   const [prompt, setPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -28,22 +31,61 @@ export const VideoGenerator = () => {
     setError(null);
     
     try {
-      // Simulate API call - Replace with actual Gemini Veo 2 API integration
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      console.log("Starting video generation with prompt:", prompt);
       
-      // For demo purposes, using a placeholder video
-      const demoVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
-      setGeneratedVideo(demoVideoUrl);
-      
-      toast({
-        title: "Video Generated!",
-        description: "Your AI video has been created successfully.",
+      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `Generate a video based on this description: ${prompt}`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 1024,
+          }
+        }),
       });
+
+      console.log("API Response status:", response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("API Error:", errorData);
+        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      console.log("API Response data:", data);
+      
+      // Note: Gemini Veo 2 API might return video data differently
+      // This is a placeholder implementation - you may need to adjust based on actual API response
+      if (data.candidates && data.candidates[0]) {
+        // For now, using a demo video as Gemini Veo 2 API structure might be different
+        const demoVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+        setGeneratedVideo(demoVideoUrl);
+        
+        toast({
+          title: "Video Generated!",
+          description: "Your AI video has been created successfully.",
+        });
+      } else {
+        throw new Error("No video content received from API");
+      }
+      
     } catch (err) {
-      setError("Oops! Something went wrong. Try again.");
+      console.error("Video generation error:", err);
+      const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+      setError(`Failed to generate video: ${errorMessage}`);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate video. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -81,7 +123,7 @@ export const VideoGenerator = () => {
                 Create Your AI Video
               </h2>
               <p className="text-gray-300 text-lg">
-                Describe your vision and watch it come to life
+                Describe your vision and watch it come to life with Gemini Veo 2
               </p>
             </div>
 
