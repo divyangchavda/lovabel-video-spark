@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -6,9 +7,9 @@ import { VideoPlayer } from '@/components/VideoPlayer';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Download, Play } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { GoogleGenAI } from "@google/genai";
 
 const GEMINI_API_KEY = "AIzaSyAUdn59Qd4GnJccsumyEB_uSOGhbSo7MTU";
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
 export const VideoGenerator = () => {
   const [prompt, setPrompt] = useState('');
@@ -32,40 +33,18 @@ export const VideoGenerator = () => {
     try {
       console.log("Starting video generation with prompt:", prompt);
       
-      const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `Generate a video based on this description: ${prompt}`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1024,
-          }
-        }),
+      const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+      
+      const response = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: `Generate a video based on this description: ${prompt}`,
       });
 
-      console.log("API Response status:", response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("API Error:", errorData);
-        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-      }
-
-      const data = await response.json();
-      console.log("API Response data:", data);
+      console.log("API Response:", response);
       
       // Note: Gemini 2.0 Flash API might return video data differently
       // This is a placeholder implementation - you may need to adjust based on actual API response
-      if (data.candidates && data.candidates[0]) {
+      if (response.text) {
         // For now, using a demo video as Gemini API structure might be different
         const demoVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
         setGeneratedVideo(demoVideoUrl);
